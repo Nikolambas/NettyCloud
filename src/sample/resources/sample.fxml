@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextArea?>
+
+<?import javafx.scene.control.ListView?>
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0"
+      prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.client.Controller">
+
+
+    <AnchorPane fx:id="regView" visible="true">
+        <Label alignment="CENTER" contentDisplay="CENTER" layoutX="280.0" layoutY="64.0" prefHeight="26.0"
+               prefWidth="150.0" text="Cloud" />
+        <Label fx:id="userNotFound" alignment="CENTER" contentDisplay="CENTER" layoutX="180.0" layoutY="180.0" prefHeight="26.0"
+            prefWidth="400.0" text="The combination of login and user will not find" visible="false"/>
+
+        <AnchorPane fx:id="registrationPane" layoutX="61.0" layoutY="174.0" visible="false">
+            <HBox>
+                <TextField fx:id="loginReg" promptText="login" />
+                <TextField fx:id="passwordReg1" promptText="password" />
+                <TextField fx:id="passwordReg2" layoutX="160.0" layoutY="10.0" promptText="password" />
+                <Button mnemonicParsing="false" onAction="#addUser" text="ok" />
+            </HBox>
+            <Label fx:id="successfulReg" alignment="CENTER" contentDisplay="CENTER" layoutX="180.0" layoutY="180.0" prefHeight="26.0"
+                   prefWidth="400.0" text="User successful registration" visible="false"/>
+            <Label fx:id="unSuccessfulReg" alignment="CENTER" contentDisplay="CENTER" layoutX="180.0" layoutY="180.0" prefHeight="26.0"
+                   prefWidth="400.0" text="user with this login is already registered" visible="false"/>
+            <Label fx:id="passNotEquals" alignment="CENTER" contentDisplay="CENTER" layoutX="180.0" layoutY="180.0" prefHeight="26.0"
+                   prefWidth="400.0" text="Passwords do not match" visible="false"/>
+        </AnchorPane>
+        <Pane fx:id="loginPane" layoutX="146.0" layoutY="143.0">
+            <HBox>
+                 <TextField fx:id="login" promptText="login"  />
+                 <PasswordField fx:id="password" promptText="password" />
+                 <Button mnemonicParsing="false" onAction="#getLogin" text="ok" />
+            </HBox>
+        </Pane>
+        <Button fx:id="switchOn" contentDisplay="TOP" layoutX="310.0" layoutY="235.0" mnemonicParsing="false"
+            onAction="#getRegistrationField" text="registration" />
+    </AnchorPane>
+    <Pane fx:id="cloudMenu" visible="false">
+        <Button layoutX="91.0" layoutY="188.0" mnemonicParsing="false" text="upload" onAction="#upload" />
+        <Button layoutX="447.0" layoutY="188.0" mnemonicParsing="false" text="download" onAction="#download" />
+        <ListView fx:id="serverView" layoutX="122.0" layoutY="50.0" prefHeight="132.0" prefWidth="356.0" />
+        <TextField  fx:id="serverHead"  layoutX="122.0" layoutY="14.0" prefHeight="25.0" prefWidth="356.0" />
+        <ListView  fx:id="clientView" layoutX="125.0" layoutY="254.0" prefHeight="132.0" prefWidth="356.0" />
+        <TextField fx:id="clientHead" layoutX="125.0" layoutY="219.0" prefHeight="25.0" prefWidth="356.0" />
+    </Pane>
+</Pane>
