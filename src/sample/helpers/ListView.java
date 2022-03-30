@@ -9,6 +9,15 @@ public class ListView implements MessageHelp {
     private List<String> files;
     private String path;
     private String user;
+    private Double ServerFreeSize;
+
+    public void setServerFreeSize(Double serverFreeSize) {
+        ServerFreeSize = serverFreeSize;
+    }
+
+    public Double getServerFreeSize() {
+        return ServerFreeSize;
+    }
 
     public String getUser() {
         return user;
