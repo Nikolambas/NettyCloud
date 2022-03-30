@@ -134,6 +134,7 @@ public class StringHandler extends SimpleChannelInboundHandler<Object> {
         }
         listView.setPath(path.resolve(user).getFileName().toString() +
                 "                     File size on server: " +String.format("%.2f", (size / 1073741824)) + "g on 2.00g");
+        listView.setServerFreeSize(2.00-(size / 1073741824));
         return listView;
     }
 

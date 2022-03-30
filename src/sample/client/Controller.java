@@ -147,6 +147,7 @@ public class Controller implements Initializable {
                             serverHead.clear();
                             serverView.getItems().clear();
                             serverHead.appendText(listView.getPath());
+                            serverFreeSize = listView.getServerFreeSize();
                             serverView.getItems().addAll(listView.getFiles());
                         });
                         break;
