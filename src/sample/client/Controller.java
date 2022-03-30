@@ -44,17 +44,19 @@ public class Controller implements Initializable {
     public Label successfulReg;
     public Label unSuccessfulReg;
     public Label passNotEquals;
+    public Label notSizeOnServer;
 
     private Path path;
     private ObjectEncoderOutputStream oos;
     private ObjectDecoderInputStream ois;
     private String userLog;
+    private Double serverFreeSize;
 
     public void getClientView() {
         Platform.runLater(() -> {
             clientHead.clear();
             clientView.getItems().clear();
-            clientHead.appendText(path.toString());
+            clientHead.appendText(path.getFileName().toString());
             clientView.getItems().addAll(path.toFile().list());
         });
 
@@ -101,7 +103,11 @@ public class Controller implements Initializable {
 
     public void upload(ActionEvent actionEvent) {
         try {
-            oos.writeObject(new FileGet(path.resolve(clientView.getSelectionModel().getSelectedItem().toString()), userLog));
+            if (Files.size(path.resolve(clientView.getSelectionModel().getSelectedItem().toString())) < serverFreeSize) {
+                oos.writeObject(new FileGet(path.resolve(clientView.getSelectionModel().getSelectedItem().toString())
+                        , userLog));
+            } else notSizeOnServer.setVisible(true);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -122,7 +128,6 @@ public class Controller implements Initializable {
         try {
             while (true) {
                 MessageHelp mh = (MessageHelp) ois.readObject();
-                System.out.println("message " + mh.getType().toString());
                 switch (mh.getType()) {
                     case USERREG:
                         UserReg userReg = (UserReg) mh;
@@ -142,6 +147,7 @@ public class Controller implements Initializable {
                             serverHead.clear();
                             serverView.getItems().clear();
                             serverHead.appendText(listView.getPath());
+                            serverFreeSize = listView.getServerFreeSize();
                             serverView.getItems().addAll(listView.getFiles());
                         });
                         break;

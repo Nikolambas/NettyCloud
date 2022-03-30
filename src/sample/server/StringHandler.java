@@ -11,7 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Slf4j
@@ -53,7 +56,6 @@ public class StringHandler extends SimpleChannelInboundHandler<Object> {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         MessageHelp a = (MessageHelp) msg;
-        System.out.println(a.getType().toString());
         switch (a.getType()) {
             case USERREG:
                 UserReg userReg = (UserReg) msg;
@@ -106,14 +108,33 @@ public class StringHandler extends SimpleChannelInboundHandler<Object> {
 
     private ListView getServerView(String user) {
         ListView listView = new ListView(user);
+        double size = 0;
         try {
             listView.setFiles(Files.list(path.resolve(user))
                     .map(p -> p.getFileName().toString())
                     .collect(Collectors.toList()));
+
+            try (Stream<Path> walk = Files.walk(path.resolve(user))) {
+                size = walk
+                        .filter(Files::isRegularFile)
+                        .mapToLong(p -> {
+                            try {
+                                return Files.size(p);
+                            } catch (IOException e) {
+                                System.out.printf("Невозможно получить размер файла %s%n%s", p, e);
+                                return 0L;
+                            }
+                        })
+                        .sum();
+            } catch (IOException e) {
+                System.out.printf("Ошибка при подсчёте размера директории %s", e);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        listView.setPath(path.resolve(user).toString());
+        listView.setPath(path.resolve(user).getFileName().toString() +
+                "                     File size on server: " +String.format("%.2f", (size / 1073741824)) + "g on 2.00g");
+        listView.setServerFreeSize(2.00-(size / 1073741824));
         return listView;
     }
 
