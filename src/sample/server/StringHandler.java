@@ -103,6 +103,11 @@ public class StringHandler extends SimpleChannelInboundHandler<Object> {
                 }
                 ctx.writeAndFlush(user);
                 break;
+            case DELETE:
+                Delete delete = (Delete)msg;
+                path.resolve(delete.getUser()).resolve(delete.getFileName()).toFile().delete();
+                ctx.writeAndFlush(getServerView(delete.getUser()));
+                break;
         }
     }
 

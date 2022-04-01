@@ -51,6 +51,7 @@
     </AnchorPane>
     <Pane fx:id="cloudMenu" visible="false">
         <Button layoutX="91.0" layoutY="188.0" mnemonicParsing="false" text="upload" onAction="#upload"/>
+        <Button layoutX="269.0" layoutY="188.0" mnemonicParsing="false" text="delete" onAction="#delete"/>
         <Button layoutX="447.0" layoutY="188.0" mnemonicParsing="false" text="download" onAction="#download"/>
         <ListView fx:id="serverView" layoutX="122.0" layoutY="50.0" prefHeight="132.0" prefWidth="356.0"/>
         <TextField fx:id="serverHead" layoutX="122.0" layoutY="14.0" prefHeight="25.0" prefWidth="356.0"/>

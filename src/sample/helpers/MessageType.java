@@ -5,5 +5,6 @@ public enum MessageType {
     USER,
     LISTVIEW,
     USERREG,
-    FILECOME
+    FILECOME,
+    DELETE
 }

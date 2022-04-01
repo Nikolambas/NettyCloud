@@ -103,7 +103,8 @@ public class Controller implements Initializable {
 
     public void upload(ActionEvent actionEvent) {
         try {
-            if (Files.size(path.resolve(clientView.getSelectionModel().getSelectedItem().toString())) < serverFreeSize) {
+            if (Files.size(path.resolve(clientView.getSelectionModel().getSelectedItem().toString()))/1073741824
+                    < serverFreeSize) {
                 oos.writeObject(new FileGet(path.resolve(clientView.getSelectionModel().getSelectedItem().toString())
                         , userLog));
             } else notSizeOnServer.setVisible(true);
@@ -184,6 +185,14 @@ public class Controller implements Initializable {
         }
     }
 
+    public void delete(ActionEvent actionEvent) {
+        try {
+            oos.writeObject(new Delete(userLog,serverView.getSelectionModel().getSelectedItem().toString()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         try {
@@ -197,5 +206,7 @@ public class Controller implements Initializable {
             e.printStackTrace();
         }
     }
+
+
 }
 
