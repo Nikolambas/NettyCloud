@@ -55,8 +55,8 @@ public class StringHandler extends SimpleChannelInboundHandler<Object> {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        MessageHelp a = (MessageHelp) msg;
-        switch (a.getType()) {
+        MessageHelp messageHelp = (MessageHelp) msg;
+        switch (messageHelp.getType()) {
             case USERREG:
                 UserReg userReg = (UserReg) msg;
                 ResultSet resultSet = statement.executeQuery("SELECT * FROM users WHERE userlogin = '"
