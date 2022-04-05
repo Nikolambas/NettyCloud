@@ -1,6 +1,9 @@
-package sample.helpers;
+package sample.helpers.classes;
 
-public class Delete implements MessageHelp{
+import sample.helpers.MessageHelp;
+import sample.helpers.MessageType;
+
+public class Delete implements MessageHelp {
     private String user;
     private String fileName;
 

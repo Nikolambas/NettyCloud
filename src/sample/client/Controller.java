@@ -1,6 +1,7 @@
 package sample.client;
 
 
+import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
@@ -8,19 +9,28 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import lombok.extern.slf4j.Slf4j;
 import sample.helpers.*;
-import sample.helpers.ListView;
+import sample.helpers.classes.*;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 @Slf4j
@@ -46,6 +56,9 @@ public class Controller implements Initializable {
     public Label passNotEquals;
     public Label notSizeOnServer;
 
+    private static final int MB_8 = 8_388_608;
+    private static final long GB_2 = 2_147_483_648L;
+
     private Path path;
     private ObjectEncoderOutputStream oos;
     private ObjectDecoderInputStream ois;
@@ -61,7 +74,6 @@ public class Controller implements Initializable {
         });
 
     }
-
 
     public void getRegistrationField(ActionEvent actionEvent) {
         if (switchOn.getText().equals("login")) {
@@ -103,17 +115,43 @@ public class Controller implements Initializable {
 
     public void upload(ActionEvent actionEvent) {
         try {
-            if (Files.size(path.resolve(clientView.getSelectionModel().getSelectedItem().toString()))/1073741824
+            if (Files.size(path.resolve(clientView.getSelectionModel().getSelectedItem().toString())) / GB_2
                     < serverFreeSize) {
-                oos.writeObject(new FileGet(path.resolve(clientView.getSelectionModel().getSelectedItem().toString())
-                        , userLog));
+                Path pathFile = path.resolve(clientView.getSelectionModel().getSelectedItem().toString());
+                byte[] bytes = Files.readAllBytes(pathFile);
+                long fileSize = pathFile.toFile().length();
+                FileGet fileGet = new FileGet(pathFile, userLog);
+                while (true) {
+                    if (fileSize < MB_8) {
+                        byte[] bytesSent = new byte[(int) fileSize];
+                        for (int i = 0; i < bytesSent.length; i++) {
+                            bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
+                        }
+                        fileGet.setFileFinish(true);
+                        fileGet.setBytes(bytesSent);
+                        oos.writeObject(fileGet);
+                        break;
+                    }
+                    if (fileSize > MB_8) {
+                        byte[] bytesSent = new byte[MB_8];
+                        for (int i = 0; i < bytesSent.length; i++) {
+                            bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
+                        }
+                        fileGet.setFileFinish(false);
+                        fileGet.setFilePart();
+                        fileGet.setBytes(bytesSent);
+                        fileSize -= MB_8;
+                        oos.writeObject(fileGet);
+                    }else{
+                        fileGet.setFileFinish(true);
+                        break;
+                    }
+                }
             } else notSizeOnServer.setVisible(true);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
     }
 
     public void download(ActionEvent actionEvent) {
@@ -143,7 +181,7 @@ public class Controller implements Initializable {
                         }
                         break;
                     case LISTVIEW:
-                        ListView listView = (ListView) mh;
+                        ServerListView listView = (ServerListView) mh;
                         Platform.runLater(() -> {
                             serverHead.clear();
                             serverView.getItems().clear();
@@ -154,8 +192,12 @@ public class Controller implements Initializable {
                         break;
                     case FILEGET:
                         FileGet fileGet = (FileGet) mh;
-                        Files.write(path.resolve(fileGet.getFileName()), fileGet.getBytes());
-                        getClientView();
+                        if (fileGet.isFileFinish()) {
+                            Files.write(path.resolve(fileGet.getFileName()),fileGet.getBytes());
+                            getClientView();
+                        }else {
+                            Files.write(path.resolve(fileGet.getFileName()),fileGet.getBytes());
+                        }
                         break;
                     case USER:
                         User user = (User) mh;
@@ -177,7 +219,7 @@ public class Controller implements Initializable {
     }
 
     private void getServerView() {
-        ListView listView = new ListView(userLog);
+        ServerListView listView = new ServerListView(userLog);
         try {
             oos.writeObject(listView);
         } catch (IOException e) {
@@ -187,7 +229,7 @@ public class Controller implements Initializable {
 
     public void delete(ActionEvent actionEvent) {
         try {
-            oos.writeObject(new Delete(userLog,serverView.getSelectionModel().getSelectedItem().toString()));
+            oos.writeObject(new Delete(userLog, serverView.getSelectionModel().getSelectedItem().toString()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -197,7 +239,7 @@ public class Controller implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         try {
             Socket socket = new Socket("localhost", 8189);
-            ois = new ObjectDecoderInputStream(socket.getInputStream());
+            ois = new ObjectDecoderInputStream(socket.getInputStream(),MB_8);
             oos = new ObjectEncoderOutputStream(socket.getOutputStream());
             Thread readThread = new Thread(this::read);
             readThread.setDaemon(true);

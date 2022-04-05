@@ -15,6 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Server {
+
+    private static final int MB_8 = 8_388_608;
+
     public static void main(String[] args) {
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup worker = new NioEventLoopGroup();
@@ -26,8 +29,8 @@ public class Server {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(
                                     new ObjectEncoder(),
-                                    new ObjectDecoder(1048576000,ClassResolvers.cacheDisabled(null)),
-                                    new StringHandler());
+                                    new ObjectDecoder(MB_8,ClassResolvers.cacheDisabled(null)),
+                                    new ServerHandler());
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(8189);

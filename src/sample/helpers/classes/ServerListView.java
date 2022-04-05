@@ -1,11 +1,14 @@
-package sample.helpers;
+package sample.helpers.classes;
 
+
+import sample.helpers.MessageHelp;
+import sample.helpers.MessageType;
 
 import java.nio.file.Path;
 import java.util.List;
 
 
-public class ListView implements MessageHelp {
+public class ServerListView implements MessageHelp {
     private List<String> files;
     private String path;
     private String user;
@@ -23,7 +26,7 @@ public class ListView implements MessageHelp {
         return user;
     }
 
-    public ListView(String user) {
+    public ServerListView(String user) {
         this.user = user;
     }
 
