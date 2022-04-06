@@ -17,18 +17,12 @@ import sample.helpers.*;
 import sample.helpers.classes.*;
 
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -121,34 +115,24 @@ public class Controller implements Initializable {
                 byte[] bytes = Files.readAllBytes(pathFile);
                 long fileSize = pathFile.toFile().length();
                 FileGet fileGet = new FileGet(pathFile, userLog);
-                while (true) {
-                    if (fileSize < MB_8) {
-                        byte[] bytesSent = new byte[(int) fileSize];
-                        for (int i = 0; i < bytesSent.length; i++) {
-                            bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
-                        }
+                while (!fileGet.isFileFinish()) {
+                    byte[] bytesSent;
+                    if (fileSize <= MB_8) {
+                        bytesSent = new byte[(int) fileSize];
                         fileGet.setFileFinish(true);
-                        fileGet.setBytes(bytesSent);
-                        oos.writeObject(fileGet);
-                        break;
                     }
-                    if (fileSize > MB_8) {
-                        byte[] bytesSent = new byte[MB_8];
-                        for (int i = 0; i < bytesSent.length; i++) {
-                            bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
-                        }
-                        fileGet.setFileFinish(false);
-                        fileGet.setFilePart();
-                        fileGet.setBytes(bytesSent);
-                        fileSize -= MB_8;
-                        oos.writeObject(fileGet);
-                    }else{
-                        fileGet.setFileFinish(true);
-                        break;
+                    else {
+                        bytesSent = new byte[MB_8];
                     }
+                    for (int i = 0; i < bytesSent.length; i++) {
+                        bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
+                    }
+                    fileGet.setBytes(bytesSent);
+                    fileGet.setFilePart();
+                    fileSize -= MB_8;
+                    oos.writeObject(fileGet);
                 }
             } else notSizeOnServer.setVisible(true);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -192,11 +176,18 @@ public class Controller implements Initializable {
                         break;
                     case FILEGET:
                         FileGet fileGet = (FileGet) mh;
+                        if (fileGet.getFilePart()==1){
+                            Files.write(path.resolve(fileGet.getFileName()), fileGet.getBytes());
+                            if (fileGet.isFileFinish()){
+                                getClientView();
+                            }
+                            break;
+                        }
                         if (fileGet.isFileFinish()) {
-                            Files.write(path.resolve(fileGet.getFileName()),fileGet.getBytes());
+                            Files.write(path.resolve(fileGet.getFileName()), fileGet.getBytes(),StandardOpenOption.APPEND);
                             getClientView();
-                        }else {
-                            Files.write(path.resolve(fileGet.getFileName()),fileGet.getBytes());
+                        } else {
+                            Files.write(path.resolve(fileGet.getFileName()), fileGet.getBytes(),StandardOpenOption.APPEND);
                         }
                         break;
                     case USER:
@@ -239,7 +230,7 @@ public class Controller implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         try {
             Socket socket = new Socket("localhost", 8189);
-            ois = new ObjectDecoderInputStream(socket.getInputStream(),MB_8);
+            ois = new ObjectDecoderInputStream(socket.getInputStream(), MB_8+500_000);
             oos = new ObjectEncoderOutputStream(socket.getOutputStream());
             Thread readThread = new Thread(this::read);
             readThread.setDaemon(true);

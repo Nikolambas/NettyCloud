@@ -23,31 +23,22 @@ public class FileComeFunctions implements MessageFunctions {
             byte[] bytes = Files.readAllBytes(pathFile);
             long fileSize = pathFile.toFile().length();
             FileGet fileGet = new FileGet(pathFile, fileCome.getUserName());
-            while (true) {
-                if (fileSize < MB_8) {
-                    byte[] bytesSent = new byte[(int)fileSize];
-                    for (int i = 0; i < bytesSent.length; i++) {
-                        bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
-                    }
+            while (!fileGet.isFileFinish()) {
+                byte[] bytesSent;
+                if (fileSize <= MB_8) {
+                    bytesSent = new byte[(int) fileSize];
                     fileGet.setFileFinish(true);
-                    fileGet.setBytes(bytesSent);
-                    chx.writeAndFlush(fileGet);
-                    break;
                 }
-                if (fileSize > MB_8) {
-                    byte[] bytesSent = new byte[MB_8];
-                    for (int i = 0; i < bytesSent.length; i++) {
-                        bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
-                    }
-                    fileGet.setFileFinish(false);
-                    fileGet.setFilePart();
-                    fileGet.setBytes(bytesSent);
-                    fileSize -= MB_8;
-                    chx.writeAndFlush(fileGet);
-                } else {
-                    fileGet.setFileFinish(true);
-                    break;
+                else {
+                    bytesSent = new byte[MB_8];
                 }
+                for (int i = 0; i < bytesSent.length; i++) {
+                    bytesSent[i] = bytes[i + MB_8 * fileGet.getFilePart()];
+                }
+                fileGet.setBytes(bytesSent);
+                fileGet.setFilePart();
+                fileSize -= MB_8;
+                chx.writeAndFlush(fileGet);
             }
         } catch (IOException e) {
             e.printStackTrace();

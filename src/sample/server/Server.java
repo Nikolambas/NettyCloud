@@ -29,7 +29,7 @@ public class Server {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(
                                     new ObjectEncoder(),
-                                    new ObjectDecoder(MB_8,ClassResolvers.cacheDisabled(null)),
+                                    new ObjectDecoder(MB_8+500_000,ClassResolvers.cacheDisabled(null)),
                                     new ServerHandler());
                         }
                     });

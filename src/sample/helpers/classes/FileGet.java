@@ -44,7 +44,7 @@ public class FileGet implements MessageHelp {
     }
 
     public void setFilePart() {
-        this.filePart = filePart++;
+        this.filePart++;
     }
 
     public byte[] getBytes() {

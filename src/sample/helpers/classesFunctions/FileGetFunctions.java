@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,11 +24,18 @@ public class FileGetFunctions implements MessageFunctions {
     public void accept(ChannelHandlerContext chx, Object o) {
         FileGet fileGet = (FileGet) o;
         try {
-            if (fileGet.isFileFinish()){
+            if (fileGet.getFilePart()==1){
                 Files.write(path.resolve(fileGet.getUser()).resolve(fileGet.getFileName()), fileGet.getBytes());
+                if (fileGet.isFileFinish()){
+                    chx.writeAndFlush(getServerView(fileGet.getUser()));
+                }
+                return;
+            }
+            if (fileGet.isFileFinish()) {
+                Files.write(path.resolve(fileGet.getUser()).resolve(fileGet.getFileName()), fileGet.getBytes(),StandardOpenOption.APPEND);
                 chx.writeAndFlush(getServerView(fileGet.getUser()));
-            }else {
-                Files.write(path.resolve(fileGet.getUser()).resolve(fileGet.getFileName()), fileGet.getBytes());
+            } else {
+                Files.write(path.resolve(fileGet.getUser()).resolve(fileGet.getFileName()), fileGet.getBytes(),StandardOpenOption.APPEND);
             }
         } catch (IOException e) {
             e.printStackTrace();
