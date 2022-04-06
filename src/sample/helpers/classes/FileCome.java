@@ -1,4 +1,7 @@
-package sample.helpers;
+package sample.helpers.classes;
+
+import sample.helpers.MessageHelp;
+import sample.helpers.MessageType;
 
 import static sample.helpers.MessageType.FILECOME;
 
